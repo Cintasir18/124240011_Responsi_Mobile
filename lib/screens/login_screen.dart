@@ -80,7 +80,6 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // LOGO DAN BRAND
                 Center(
                   child: Column(
                     children: [
@@ -92,14 +91,14 @@ class _LoginScreenState extends State<LoginScreen> {
                           borderRadius: BorderRadius.circular(24),
                         ),
                         child: const Icon(
-                          Icons.sports_esports,
+                          Icons.shopping_cart,
                           color: Colors.white,
                           size: 38,
                         ),
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'Hydra',
+                        'SHOPEDIA',
                         style: TextStyle(
                           fontSize: 30,
                           fontWeight: FontWeight.bold,
@@ -108,7 +107,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       Text(
-                        'Games',
+                        'E-commerce',
                         style: TextStyle(
                           fontSize: 11,
                           letterSpacing: 4,
@@ -132,7 +131,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Sign in to explore and collect your favorite games.',
+                  'Sign in to explore and find your collection',
                   style: TextStyle(
                     fontSize: 14,
                     height: 1.6,
@@ -204,7 +203,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 30),
 
-                // LOGIN BUTTON
                 SizedBox(
                   width: double.infinity,
                   height: 54,
@@ -249,7 +247,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 // FOOTER
                 Center(
                   child: Text(
-                    'HYDRA GAMES  •  DISCOVER & PLAY',
+                    'SHOPEDIA  •  BELI SEMUA DI SHOPEDIA',
                     style: TextStyle(
                       fontSize: 10,
                       letterSpacing: 1.5,

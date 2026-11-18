@@ -1,9 +1,9 @@
 
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
-import '../models/cart_item.dart';
 import '../models/product.dart';
-import '../services/cart_service.dart';
+import '../controllers/cart_controller.dart';
 import '../services/product_service.dart';
 import 'detail_screen.dart';
 
@@ -20,7 +20,7 @@ class CartScreen extends StatefulWidget {
 }
 
 class _CartScreenState extends State<CartScreen> {
-  late List<CartItem> items;
+  late CartController controller;
 
   final ProductService _productService = ProductService();
 
@@ -29,44 +29,29 @@ class _CartScreenState extends State<CartScreen> {
   @override
   void initState() {
     super.initState();
-    loadCart();
-  }
 
-  void loadCart() {
-    items = CartService.getCart(widget.username);
-
-    for (final item in items) {
-      _productDetails.putIfAbsent(
-        item.productId,
-        () => _productService.getProductById(item.productId),
-      );
-    }
-  }
-
-  Future<void> deleteItem(int productId) async {
-    await CartService.removeProduct(
-      username: widget.username,
-      productId: productId,
-    );
-
-    if (!mounted) return;
-
-    setState(() {
-      items.removeWhere((item) => item.productId == productId);
-      _productDetails.remove(productId);
-    });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Produk berhasil dihapus dari keranjang'),
-      ),
+    controller = Get.put(
+      CartController(username: widget.username),
+      tag: widget.username,
     );
   }
 
-  Future<void> openDetail(CartItem item) async {
+  @override
+  void dispose() {
+    Get.delete<CartController>(tag: widget.username);
+    super.dispose();
+  }
+
+  Future<Product> getProductDetail(int productId) {
+    return _productDetails.putIfAbsent(
+      productId,
+      () => _productService.getProductById(productId),
+    );
+  }
+
+  Future<void> openDetail(int productId) async {
     try {
-      final product = await (_productDetails[item.productId] ??
-          _productService.getProductById(item.productId));
+      final product = await getProductDetail(productId);
 
       if (!mounted) return;
 
@@ -80,216 +65,226 @@ class _CartScreenState extends State<CartScreen> {
         ),
       );
     } catch (e) {
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Gagal membuka detail produk'),
-        ),
+      Get.snackbar(
+        'Error',
+        'Gagal membuka detail produk',
+        snackPosition: SnackPosition.BOTTOM,
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final double total = items.fold(
-      0,
-      (sum, item) => sum + item.subtotal,
-    );
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Keranjang Belanja'),
       ),
 
-      body: items.isEmpty
-          ? const Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.shopping_cart_outlined,
-                    size: 64,
-                    color: Colors.grey,
-                  ),
-                  SizedBox(height: 12),
-                  Text('Keranjang kamu masih kosong.'),
-                ],
-              ),
-            )
-          : Column(
-              children: [
-                Expanded(
-                  child: ListView.builder(
-                    padding: const EdgeInsets.all(12),
-                    itemCount: items.length,
-                    itemBuilder: (context, index) {
-                      final CartItem item = items[index];
+      // Obx memantau perubahan daftar keranjang
+      body: Obx(() {
+        final items = controller.items;
 
-                      return Card(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        clipBehavior: Clip.antiAlias,
-                        child: InkWell(
-                          onTap: () => openDetail(item),
-                          child: Padding(
-                            padding: const EdgeInsets.all(12),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: Image.network(
-                                    item.thumbnail,
+        if (items.isEmpty) {
+          return const Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.shopping_cart_outlined,
+                  size: 64,
+                  color: Colors.grey,
+                ),
+                SizedBox(height: 12),
+                Text('Keranjang kamu masih kosong.'),
+              ],
+            ),
+          );
+        }
+
+        return Column(
+          children: [
+            Expanded(
+              child: ListView.builder(
+                padding: const EdgeInsets.all(12),
+                itemCount: items.length,
+                itemBuilder: (context, index) {
+                  final item = items[index];
+
+                  return Card(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    clipBehavior: Clip.antiAlias,
+                    child: InkWell(
+                      onTap: () => openDetail(item.productId),
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Gambar produk
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.network(
+                                item.thumbnail,
+                                width: 90,
+                                height: 110,
+                                fit: BoxFit.contain,
+                                errorBuilder:
+                                    (context, error, stackTrace) {
+                                  return Container(
                                     width: 90,
                                     height: 110,
-                                    fit: BoxFit.contain,
-                                    errorBuilder:
-                                        (context, error, stackTrace) {
-                                      return Container(
-                                        width: 90,
-                                        height: 110,
-                                        color: Colors.grey.shade200,
-                                        child: const Icon(
-                                          Icons.image_not_supported,
-                                        ),
+                                    color: Colors.grey.shade200,
+                                    child: const Icon(
+                                      Icons.image_not_supported,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+
+                            const SizedBox(width: 12),
+
+                            // Informasi produk
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    item.title,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+
+                                  const SizedBox(height: 8),
+
+                                  Text(
+                                    '\$${item.price.toStringAsFixed(2)}',
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+
+                                  const SizedBox(height: 6),
+
+                                  // Rating dari Fake Store API
+                                  FutureBuilder<Product>(
+                                    future: getProductDetail(
+                                      item.productId,
+                                    ),
+                                    builder: (context, snapshot) {
+                                      if (snapshot.connectionState ==
+                                          ConnectionState.waiting) {
+                                        return const Text(
+                                          'Memuat rating...',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.grey,
+                                          ),
+                                        );
+                                      }
+
+                                      if (snapshot.hasError ||
+                                          !snapshot.hasData) {
+                                        return const Text(
+                                          'Rating tidak tersedia',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.grey,
+                                          ),
+                                        );
+                                      }
+
+                                      final rating =
+                                          snapshot.data!.rating;
+
+                                      return Row(
+                                        children: [
+                                          const Icon(
+                                            Icons.star,
+                                            color: Colors.amber,
+                                            size: 18,
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            '${rating.rate} (${rating.count} ulasan)',
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                              color: Colors.grey,
+                                            ),
+                                          ),
+                                        ],
                                       );
                                     },
                                   ),
-                                ),
 
-                                const SizedBox(width: 12),
+                                  const SizedBox(height: 6),
 
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        item.title,
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-
-                                      const SizedBox(height: 8),
-
-                                      Text(
-                                        '\$${item.price.toStringAsFixed(2)}',
-                                        style: const TextStyle(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-
-                                      const SizedBox(height: 6),
-
-                                      FutureBuilder<Product>(
-                                        future: _productDetails[item.productId],
-                                        builder: (context, snapshot) {
-                                          if (snapshot.connectionState ==
-                                              ConnectionState.waiting) {
-                                            return const Text(
-                                              'Memuat rating...',
-                                              style: TextStyle(
-                                                fontSize: 12,
-                                                color: Colors.grey,
-                                              ),
-                                            );
-                                          }
-
-                                          if (snapshot.hasError ||
-                                              !snapshot.hasData) {
-                                            return const Text(
-                                              'Rating tidak tersedia',
-                                              style: TextStyle(
-                                                fontSize: 12,
-                                                color: Colors.grey,
-                                              ),
-                                            );
-                                          }
-
-                                          final rating =
-                                              snapshot.data!.rating;
-
-                                          return Row(
-                                            children: [
-                                              const Icon(
-                                                Icons.star,
-                                                color: Colors.amber,
-                                                size: 18,
-                                              ),
-                                              const SizedBox(width: 4),
-                                              Text(
-                                                '${rating.rate} (${rating.count} ulasan)',
-                                                style: const TextStyle(
-                                                  fontSize: 12,
-                                                  color: Colors.grey,
-                                                ),
-                                              ),
-                                            ],
-                                          );
-                                        },
-                                      ),
-
-                                      const SizedBox(height: 6),
-
-                                      Text(
-                                        'Quantity: ${item.quantity}',
-                                        style: const TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.grey,
-                                        ),
-                                      ),
-
-                                      const SizedBox(height: 4),
-
-                                      const Text(
-                                        'Ketuk untuk melihat detail',
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          color: Colors.blueGrey,
-                                        ),
-                                      ),
-                                    ],
+                                  Text(
+                                    'Quantity: ${item.quantity}',
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey,
+                                    ),
                                   ),
-                                ),
 
-                                IconButton(
-                                  tooltip: 'Hapus produk',
-                                  onPressed: () =>
-                                      deleteItem(item.productId),
-                                  icon: const Icon(
-                                    Icons.delete_outline,
-                                    color: Colors.red,
+                                  const SizedBox(height: 4),
+
+                                  const Text(
+                                    'Ketuk untuk melihat detail',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: Colors.blueGrey,
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
 
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(18),
-                  color: Colors.white,
-                  child: Text(
-                    'Total: \$${total.toStringAsFixed(2)}',
-                    textAlign: TextAlign.end,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                            // Tombol hapus menggunakan GetX
+                            IconButton(
+                              tooltip: 'Hapus produk',
+                              onPressed: () {
+                                controller.deleteItem(
+                                  item.productId,
+                                );
+                              },
+                              icon: const Icon(
+                                Icons.delete_outline,
+                                color: Colors.red,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-              ],
+                  );
+                },
+              ),
             ),
+
+            // Total harga otomatis diperbarui oleh Obx
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(18),
+              color: Colors.white,
+              child: Text(
+                'Total: \$${controller.total.toStringAsFixed(2)}',
+                textAlign: TextAlign.end,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        );
+      }),
     );
   }
 }
