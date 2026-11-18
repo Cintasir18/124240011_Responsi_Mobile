@@ -7,7 +7,7 @@ import '../models/product.dart';
 class CartService {
   static Box get _box => Hive.box('cart');
 
-  // Mengambil semua produk dalam keranjang berdasarkan username
+  // Mengambil semua produk dlm keranjang berdasarkan username
   static List<CartItem> getCart(String username) {
     final List<dynamic> savedItems =
         _box.get(username, defaultValue: <dynamic>[]) as List<dynamic>;
@@ -17,7 +17,6 @@ class CartService {
         .toList();
   }
 
-  // Mengecek apakah produk sudah ada di keranjang
   static bool isInCart({
     required String username,
     required int productId,
@@ -27,23 +26,21 @@ class CartService {
     return items.any((item) => item.productId == productId);
   }
 
-  // Menambahkan produk ke keranjang
+  // tambah produk ke kranjang
   static Future<void> addProduct({
     required String username,
     required Product product,
   }) async {
     final List<CartItem> items = getCart(username);
 
-    // Cek apakah produk sudah ada
+    // afkh produk udh ada
     final bool alreadyExists =
         items.any((item) => item.productId == product.id);
-
-    // Jika sudah ada, tidak perlu ditambahkan lagi
     if (alreadyExists) {
       return;
     }
 
-    // Jika belum ada, tambahkan produk baru
+    // klo blum ada, tambah produk
     items.add(
       CartItem(
         username: username,
@@ -55,14 +52,14 @@ class CartService {
       ),
     );
 
-    // Simpan ke Hive
+    // Simpan ke hive
     await _box.put(
       username,
       items.map((item) => item.toMap()).toList(),
     );
   }
 
-  // Menghapus produk dari keranjang
+  // hapus produk dri keranjang
   static Future<void> removeProduct({
     required String username,
     required int productId,
@@ -77,7 +74,6 @@ class CartService {
     );
   }
 
-  // Menghitung jumlah produk dalam keranjang
   static int getCartCount(String username) {
     return getCart(username).length;
   }

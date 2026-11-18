@@ -9,10 +9,8 @@ class CartController extends GetxController {
 
   CartController({required this.username});
 
-  // Daftar produk keranjang yang reaktif
   final RxList<CartItem> items = <CartItem>[].obs;
 
-  // Status loading
   final RxBool isLoading = false.obs;
 
   @override
@@ -21,14 +19,12 @@ class CartController extends GetxController {
     loadCart();
   }
 
-  // Mengambil data keranjang dari Hive
   void loadCart() {
     items.assignAll(
       CartService.getCart(username),
     );
   }
 
-  // Menghitung total harga
   double get total {
     return items.fold(
       0,
@@ -36,7 +32,6 @@ class CartController extends GetxController {
     );
   }
 
-  // Menghapus produk dari keranjang
   Future<void> deleteItem(int productId) async {
     await CartService.removeProduct(
       username: username,

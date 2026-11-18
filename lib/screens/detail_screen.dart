@@ -31,19 +31,16 @@ class _DetailScreenState extends State<DetailScreen> {
   void initState() {
     super.initState();
 
-    // Mengambil detail produk berdasarkan ID
     productFuture = ProductService().getProductById(
       widget.product.id,
     );
 
-    // Mengecek apakah produk sudah ada di keranjang
     isInCart = CartService.isInCart(
       username: widget.username,
       productId: widget.product.id,
     );
   }
 
-  // Menambahkan produk ke keranjang
   Future<void> addToCart(Product product) async {
     setState(() {
       isSaving = true;
@@ -82,7 +79,6 @@ class _DetailScreenState extends State<DetailScreen> {
     }
   }
 
-  // Membuka halaman keranjang
   void openCart() {
     Navigator.push(
       context,
@@ -129,7 +125,6 @@ class _DetailScreenState extends State<DetailScreen> {
       body: FutureBuilder<Product>(
         future: productFuture,
         builder: (context, snapshot) {
-          // Loading indicator
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
               child: CircularProgressIndicator(
@@ -138,7 +133,6 @@ class _DetailScreenState extends State<DetailScreen> {
             );
           }
 
-          // Error
           if (snapshot.hasError || !snapshot.hasData) {
             return Center(
               child: Column(
@@ -173,7 +167,6 @@ class _DetailScreenState extends State<DetailScreen> {
           return ListView(
             padding: const EdgeInsets.fromLTRB(20, 10, 20, 24),
             children: [
-              // GAMBAR PRODUK
               Container(
                 height: 300,
                 width: double.infinity,
@@ -197,7 +190,6 @@ class _DetailScreenState extends State<DetailScreen> {
 
               const SizedBox(height: 22),
 
-              // KATEGORI
               Text(
                 product.category.toUpperCase(),
                 style: const TextStyle(
@@ -210,7 +202,6 @@ class _DetailScreenState extends State<DetailScreen> {
 
               const SizedBox(height: 10),
 
-              // NAMA PRODUK
               Text(
                 product.title,
                 style: const TextStyle(
@@ -222,7 +213,6 @@ class _DetailScreenState extends State<DetailScreen> {
 
               const SizedBox(height: 12),
 
-              // HARGA
               Text(
                 '\$${product.price.toStringAsFixed(2)}',
                 style: const TextStyle(
@@ -234,7 +224,6 @@ class _DetailScreenState extends State<DetailScreen> {
 
               const SizedBox(height: 12),
 
-              // RATING DAN JUMLAH REVIEW
               Row(
                 children: [
                   const Icon(
@@ -267,7 +256,6 @@ class _DetailScreenState extends State<DetailScreen> {
 
               const SizedBox(height: 12),
 
-              // DESKRIPSI
               const Text(
                 'Deskripsi Produk',
                 style: TextStyle(
@@ -290,7 +278,6 @@ class _DetailScreenState extends State<DetailScreen> {
 
               const SizedBox(height: 28),
 
-              // BUTTON ADD TO CART
               SizedBox(
                 height: 52,
                 width: double.infinity,

@@ -120,7 +120,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 55),
 
-                // JUDUL
                 Text(
                   'Welcome Back!',
                   style: TextStyle(
@@ -141,7 +140,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 32),
 
-                // USERNAME
                 Text(
                   'Email',
                   style: TextStyle(
@@ -163,7 +161,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 22),
 
-                // PASSWORD
                 Text(
                   'Password',
                   style: TextStyle(
@@ -244,7 +241,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 35),
 
-                // FOOTER
                 Center(
                   child: Text(
                     'SHOPEDIA  •  BELI SEMUA DI SHOPEDIA',

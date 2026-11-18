@@ -80,7 +80,6 @@ class _CartScreenState extends State<CartScreen> {
         title: const Text('Keranjang Belanja'),
       ),
 
-      // Obx memantau perubahan daftar keranjang
       body: Obx(() {
         final items = controller.items;
 
@@ -120,7 +119,6 @@ class _CartScreenState extends State<CartScreen> {
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Gambar produk
                             ClipRRect(
                               borderRadius: BorderRadius.circular(8),
                               child: Image.network(
@@ -144,7 +142,6 @@ class _CartScreenState extends State<CartScreen> {
 
                             const SizedBox(width: 12),
 
-                            // Informasi produk
                             Expanded(
                               child: Column(
                                 crossAxisAlignment:
@@ -172,7 +169,6 @@ class _CartScreenState extends State<CartScreen> {
 
                                   const SizedBox(height: 6),
 
-                                  // Rating dari Fake Store API
                                   FutureBuilder<Product>(
                                     future: getProductDetail(
                                       item.productId,
@@ -268,7 +264,6 @@ class _CartScreenState extends State<CartScreen> {
               ),
             ),
 
-            // Total harga otomatis diperbarui oleh Obx
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(18),

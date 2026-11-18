@@ -66,7 +66,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
             return CustomScrollView(
               slivers: [
-                // HEADER
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(20, 18, 20, 12),
@@ -108,7 +107,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
 
-                // GREETING
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
@@ -223,7 +221,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
 
-                // PRODUCT TITLE
                 SliverToBoxAdapter(
                   key: _productSectionKey,
                   child: Padding(
@@ -253,7 +250,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
 
-                // LOADING
                 if (snapshot.connectionState == ConnectionState.waiting)
                   const SliverFillRemaining(
                     hasScrollBody: false,
@@ -263,7 +259,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                   )
-                // ERROR
                 else if (snapshot.hasError)
                   SliverFillRemaining(
                     hasScrollBody: false,
@@ -294,13 +289,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                   )
-                // EMPTY
                 else if (products.isEmpty)
                   const SliverFillRemaining(
                     hasScrollBody: false,
                     child: Center(child: Text('No products available.')),
                   )
-                // PRODUCT GRID
                 else
                   SliverPadding(
                     padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
