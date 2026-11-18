@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../models/product.dart';
 import '../services/product_service.dart';
 import '../services/cart_service.dart';
+import '../services/notification_services.dart';
 import '../theme/app_theme.dart';
 import 'cart_screen.dart';
 
@@ -59,9 +60,24 @@ class _DetailScreenState extends State<DetailScreen> {
         isSaving = false;
       });
 
+      try {
+        await NotificationService.showNotification(
+          title: 'Produk Berhasil Ditambahkan!',
+          body: '${product.title} telah ditambahkan ke keranjang.',
+        );
+      } catch (notificationError) {
+        debugPrint(
+          'Gagal menampilkan notifikasi: $notificationError',
+        );
+      }
+
+      if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Produk berhasil ditambahkan ke keranjang!'),
+          content: Text(
+            'Produk berhasil ditambahkan ke keranjang!',
+          ),
         ),
       );
     } catch (e) {
@@ -73,9 +89,13 @@ class _DetailScreenState extends State<DetailScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Gagal menambahkan produk ke keranjang.'),
+          content: Text(
+            'Gagal menambahkan produk ke keranjang.',
+          ),
         ),
       );
+
+      debugPrint('Error add to cart: $e');
     }
   }
 
